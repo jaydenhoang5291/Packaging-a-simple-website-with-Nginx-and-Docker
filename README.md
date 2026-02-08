@@ -1,121 +1,121 @@
 # 📦 Packaging a Simple Website with Nginx and Docker
 
-## 📝 Mô tả
-Hướng dẫn từng bước đóng gói và triển khai một trang web tĩnh đơn giản bằng **Nginx** và **Docker**.
+## 📝 Description
+This guide walks you through the steps to package and deploy a simple static website using **Nginx** and **Docker**.
 
 ---
 
-## 1. Tạo thư mục và tệp cần thiết
+## 1. Create the project directory and required files
 
-Trước tiên, cần tạo một thư mục chứa trang web và các file cần thiết (ở đây chỉ cần 1 file text html)
+First, create a directory to store your website and the necessary files.  
+In this example, we only need one HTML file.
 
 ```bash
-mkdir my-web && cd my-web  # Tạo thư mục "my-web" và di chuyển vào đó
-touch index.html           # Tạo file HTML của trang web
-touch Dockerfile           # Tạo file cấu hình Docker
+mkdir my-web && cd my-web   # Create the "my-web" directory and move into it
+touch index.html            # Create the HTML file
+touch Dockerfile            # Create the Docker configuration file
 ```
 ---
 
-## 2. Viết trang web đơn giản (HTML)
+## 2. Create a simple HTML webpage
 
-Đây là trang web của bạn. Khi truy cập, trình duyệt sẽ hiển thị nội dung của file này.
+This is your website. When accessed, the browser will display the content of this file.
 
-File này cần đặt vào đúng thư mục mà Nginx có thể đọc.
+The file must be placed in a directory that Nginx can read.
 
-Mở file index.html và thêm nội dung sau:
+Open index.html and add the following content:
 ```
-<h1>Hello I'm from lab cô Hà!</h1>
+<h1>Hello I'm from lab Mrs. Ha!</h1>
 <p>This website is running in Docker Container with Nginx!</p>
 ```
 
 ---
 
-## 3. Viết Dockerfile để đóng gói thành Docker Image.
-Dockerfile là công thức để tạo Docker Image.
+## 3. Write the Dockerfile to build a Docker Image
+A Dockerfile is a recipe used to build a Docker Image.
 
-Chúng ta sẽ sử dụng Nginx để làm web server.
+We will use Nginx as the web server.
 
-Chúng ta cần copy file index.html vào thư mục mặc định của Nginx để nó hiển thị trang web.
+The index.html file needs to be copied into Nginx’s default web directory so it can be served.
 
-Mở file Dockerfile và thêm nội dung sau:
+Open Dockerfile and add the following content:
 ```dockerfile
-# Sử dụng image Nginx mới nhất làm nền tảng
+# Use the latest Nginx image as the base image
 FROM nginx:latest  
 
-# Copy file index.html vào thư mục gốc của Nginx trong container
+# Copy index.html into Nginx default web directory
 COPY index.html /usr/share/nginx/html/index.html  
 
-# Mở cổng 80 (cổng mặc định của Nginx)
+# Expose port 80 (default HTTP port)
 EXPOSE 80  
 
-# Chạy Nginx ở chế độ foreground (không chạy ngầm)
+# Run Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-### 🔍 Giải thích từng dòng:
+### 🔍 Explanation
 
-1️⃣ `FROM nginx:latest` → Lấy image Nginx mới nhất từ Docker Hub.  
-2️⃣ `COPY index.html /usr/share/nginx/html/index.html` → Sao chép file web vào thư mục mặc định của Nginx.  
-3️⃣ `EXPOSE 80` → Mở cổng 80 để nhận kết nối HTTP.  
-4️⃣ `CMD ["nginx", "-g", "daemon off;"]` → Chạy Nginx ở chế độ foreground để container không bị dừng.  
+1️⃣ `FROM nginx:latest` → Pulls the latest Nginx image from Docker Hub.
+2️⃣ `COPY index.html /usr/share/nginx/html/index.html` → Copies the website file into Nginx’s default serving directory.
+3️⃣ `EXPOSE 80` → Exposes port 80 for HTTP traffic.
+4️⃣ `CMD ["nginx", "-g", "daemon off;"]` → Runs Nginx in foreground mode so the container keeps running. 
 
 ---
 
-## 4. Tạo Docker Image từ Dockerfile.
-Giải thích:
+## 4. Build the Docker Image
+Now we build a Docker Image from the Dockerfile.
 
-Bây giờ chúng ta cần tạo Docker Image từ Dockerfile.
+Docker will:
+- Pull the Nginx image
+- Copy index.html
+- Create a runnable image
 
-Docker sẽ đọc Dockerfile, lấy Nginx, copy index.html vào, và tạo một Image có thể chạy.
-
-Chạy lệnh sau để tạo Image:
+Run the following command:
 ```bash
 docker build -t my-nginx .
 ```
 
-🔍 **Giải thích lệnh:**
-- `docker build` → Dùng để tạo Docker Image.
-- `-t my-nginx` → Đặt tên cho image là **my-nginx**.
-- `.` → Chỉ định Dockerfile nằm trong thư mục hiện tại.
+🔍 **Command explanation:**
+- `docker build` → Builds a Docker image
+- `-t my-nginx` → Names the image **my-nginx**.
+- `.` → Uses the Dockerfile in the current directory
 
-⏳ **Nếu thành công -> thông báo `FINISHED`!**
+⏳ **If successful, the build process will finish without errors: `FINISHED`!**
 
 ---
 
-## 5. Chạy Container từ Image
+## 5. Run a Container from the Image
 
-Giải thích:
+Now we run a container from the image we just built.
 
-Chúng ta cần chạy Container từ Image vừa tạo.
+The container will use Nginx to serve the website.
 
-Container sẽ dùng Nginx để phục vụ trang web.
+We map port 8080 on the host machine to port 80 inside the container.
 
-Chúng ta sẽ ánh xạ cổng 8080 trên máy vào cổng 80 trong Container.
-
-📌 Chạy lệnh sau để khởi động Container:
+Run the following command:
 ```bash
 docker run -d -p 8080:80 my-nginx
 ```
 
-Giải thích lệnh:
+Command explanation
 
-1️⃣ docker run → Chạy một Container mới.
+1️⃣ docker run → Starts a new container
 
-2️⃣ -d → Chạy ở chế độ nền (detached mode).
+2️⃣ -d → Runs the container in detached (background) mode
 
-3️⃣ -p 8080:80 → Chuyển tiếp cổng:
+3️⃣ -p 8080:80 → Port mapping:
 
-Cổng 8080 trên máy (host) → Cổng 80 trong Container (Nginx).
+Host port 8080 → Container port 80
 
-4️⃣ my-nginx → Chạy từ Image có tên my-nginx.
+4️⃣ my-nginx → The Docker image name
 
-✅ Sau khi chạy xong, Container đang chạy nền và web đã hoạt động!
+✅ After running this command, the container is running and the website is live.
 
-## 6. Truy cập vào trang web.
+## 6. Access the website
 
-Mở trình duyệt, nhập địa chỉ:
+Open your browser and go to:
 ```
 http://localhost:8080  
 ```
-
+🎉 You should see your webpage served by Nginx running inside a Docker container.
 
